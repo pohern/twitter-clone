@@ -3,6 +3,7 @@ import { ErrorMessage, Field, Form, Formik } from "formik";
 import React from "react";
 import { Link, useHistory } from "react-router-dom";
 import * as Yup from "yup";
+import TwitterLogo from "../styles/assets/twitter-logo.png";
 
 
 const SIGNUP_MUTATION = gql`
@@ -49,7 +50,12 @@ function Signup() {
 
   return (
     <div className='container'>
-      
+      <img
+        src={TwitterLogo}
+        alt='Logo'
+        style={{ width: "50px" }}
+        className='logo'
+      />
       <h3>Sign up</h3>
       <Formik
         initialValues={initialValues}
@@ -82,6 +88,10 @@ function Signup() {
           </button>
         </Form>
       </Formik>
+      <div className='register'>
+        <h4>Already have an account?</h4>
+        <Link to='/login'>Login</Link>
+      </div>
     </div>
   );
 }
