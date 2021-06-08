@@ -39,7 +39,7 @@ function Signup() {
       .max(20, "Must be 20 characters or less")
       .required("Password Required"),
     confirmPassword: Yup.string().oneOf(
-      [Yup.ref("password")],
+      [Yup.ref("password"), null],
       "Passwords must match"
     ),
     name: Yup.string()
@@ -61,7 +61,7 @@ function Signup() {
           });
           localStorage.setItem("token", response.data.signup.token);
           setSubmitting(false);
-          history.push("/");
+          history.push("/users");
         }}
       >
         <Form>

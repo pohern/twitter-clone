@@ -5,8 +5,8 @@ import { Link, useHistory } from "react-router-dom";
 import * as Yup from "yup";
 
 const LOGIN_MUTATION = gql`
-  mutation login($name: String, $email: String!, $password: String!) {
-    login(name: $name, email: $email, password: $password) {
+  mutation login( $email: String!, $password: String!) {
+    login( email: $email, password: $password) {
       token
     }
   }
@@ -48,7 +48,7 @@ function Login() {
           });
           localStorage.setItem("token", response.data.login.token);
           setSubmitting(false);
-          history.push("/");
+          history.push("/users");
         }}
       >
         <Form>
