@@ -42,19 +42,19 @@ const Query = objectType({
     })
 
     t.nullable.field('postById', {
-      type: 'Post',
+      type: 'Tweet',
       args: {
         id: intArg(),
       },
       resolve: (_parent, args, context: Context) => {
-        return context.prisma.post.findUnique({
+        return context.prisma.tweet.findUnique({
           where: { id: args.id || undefined },
         })
       },
     })
 
     t.nonNull.list.nonNull.field('feed', {
-      type: 'Post',
+      type: 'Tweet',
       args: {
         searchString: stringArg(),
         skip: intArg(),
@@ -73,20 +73,20 @@ const Query = objectType({
           }
           : {}
 
-        return context.prisma.post.findMany({
+        return context.prisma.tweet.findMany({
           where: {
-            published: true,
+            // published: true,
             ...or,
           },
           take: args.take || undefined,
           skip: args.skip || undefined,
-          orderBy: args.orderBy || undefined,
+          // orderBy: args.orderBy || undefined,
         })
       },
     })
 
     t.list.field('draftsByUser', {
-      type: 'Post',
+      type: 'Tweet',
       args: {
         userUniqueInput: nonNull(
           arg({
@@ -102,9 +102,9 @@ const Query = objectType({
               email: args.userUniqueInput.email || undefined,
             },
           })
-          .posts({
+          .tweets({
             where: {
-              published: false,
+              // published: false,
             },
           })
       },
@@ -165,7 +165,7 @@ const Mutation = objectType({
     })
 
     t.field('createDraft', {
-      type: 'Post',
+      type: 'Tweet',
       args: {
         data: nonNull(
           arg({
@@ -175,7 +175,7 @@ const Mutation = objectType({
       },
       resolve: (_, args, context: Context) => {
         const userId = getUserId(context)
-        return context.prisma.post.create({
+        return context.prisma.tweet.create({
           data: {
             title: args.data.title,
             content: args.data.content,
@@ -186,19 +186,19 @@ const Mutation = objectType({
     })
 
     t.field('togglePublishPost', {
-      type: 'Post',
+      type: 'Tweet',
       args: {
         id: nonNull(intArg()),
       },
       resolve: async (_, args, context: Context) => {
         try {
-          const post = await context.prisma.post.findUnique({
+          const post = await context.prisma.tweet.findUnique({
             where: { id: args.id || undefined },
             select: {
               published: true,
             },
           })
-          return context.prisma.post.update({
+          return context.prisma.tweet.update({
             where: { id: args.id || undefined },
             data: { published: !post?.published },
           })
@@ -211,12 +211,12 @@ const Mutation = objectType({
     })
 
     t.field('incrementPostViewCount', {
-      type: 'Post',
+      type: 'Tweet',
       args: {
         id: nonNull(intArg()),
       },
       resolve: (_, args, context: Context) => {
-        return context.prisma.post.update({
+        return context.prisma.tweet.update({
           where: { id: args.id || undefined },
           data: {
             viewCount: {
@@ -228,12 +228,12 @@ const Mutation = objectType({
     })
 
     t.field('deletePost', {
-      type: 'Post',
+      type: 'Tweet',
       args: {
         id: nonNull(intArg()),
       },
       resolve: (_, args, context: Context) => {
-        return context.prisma.post.delete({
+        return context.prisma.tweet.delete({
           where: { id: args.id },
         })
       },
@@ -247,40 +247,70 @@ const User = objectType({
     t.nonNull.int('id')
     t.string('name')
     t.nonNull.string('email')
-    t.nonNull.list.nonNull.field('posts', {
-      type: 'Post',
+    t.nonNull.list.nonNull.field('tweets', {
+      type: 'Tweet',
       resolve: (parent, _, context: Context) => {
         return context.prisma.user
           .findUnique({
             where: { id: parent.id || undefined },
           })
-          .posts()
+          .tweets()
       },
     })
+    t.nonNull.string('Profile')
   },
 })
 
-const Post = objectType({
-  name: 'Post',
+// const Post = objectType({
+//   name: 'Post',
+//   definition(t) {
+//     t.nonNull.int('id')
+//     t.nonNull.field('createdAt', { type: 'DateTime' })
+//     t.nonNull.field('updatedAt', { type: 'DateTime' })
+//     t.nonNull.string('title')
+//     t.string('content')
+//     t.nonNull.boolean('published')
+//     t.nonNull.int('viewCount')
+//     t.field('author', {
+//       type: 'User',
+//       resolve: (parent, _, context: Context) => {
+//         return context.prisma.post
+//           .findUnique({
+//             where: { id: parent.id || undefined },
+//           })
+//           .author()
+//       },
+//     })
+//   },
+// })
+const Tweet = objectType({
+  name: 'Tweet',
   definition(t) {
     t.nonNull.int('id')
     t.nonNull.field('createdAt', { type: 'DateTime' })
-    t.nonNull.field('updatedAt', { type: 'DateTime' })
-    t.nonNull.string('title')
     t.string('content')
-    t.nonNull.boolean('published')
-    t.nonNull.int('viewCount')
     t.field('author', {
       type: 'User',
       resolve: (parent, _, context: Context) => {
-        return context.prisma.post
+        return context.prisma.tweet
           .findUnique({
             where: { id: parent.id || undefined },
           })
           .author()
       },
     })
-  },
+  }
+})
+const Profile = objectType({
+  name: 'Profile',
+  definition(t) {
+    t.nonNull.int('id')
+    t.nonNull.field('createdAt', { type: 'DateTime' })
+    t.string('bio')
+    t.string('location')
+    t.string('website')
+    t.string('avatar')
+  }
 })
 
 const SortOrder = enumType({
@@ -332,7 +362,7 @@ const schemaWithoutPermissions = makeSchema({
   types: [
     Query,
     Mutation,
-    Post,
+    Profile,
     User,
     AuthPayload,
     UserUniqueInput,
@@ -341,6 +371,7 @@ const schemaWithoutPermissions = makeSchema({
     SortOrder,
     PostOrderByUpdatedAtInput,
     DateTime,
+    Tweet
   ],
   outputs: {
     schema: __dirname + '/../schema.graphql',

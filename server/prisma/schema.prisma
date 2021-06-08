@@ -12,7 +12,7 @@ model User {
   email    String  @unique
   password String
   name     String?
-  tweets    Tweet[]
+  tweets   Tweet[]
   profile Profile?
 }
 
@@ -28,6 +28,14 @@ model User {
 //   authorId  Int?
 // }
 
+model Tweet {
+  id Int @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  content String
+  author User? @relation(fields: [authorId], references: [id])
+  authorId Int?
+}
+
 model Profile {
   id Int @id @default(autoincrement())
   createdAt DateTime @default(now())
@@ -39,10 +47,4 @@ model Profile {
   User User? @relation(fields: [userId], references: [id])
 }
 
-model Tweet {
-  id Int @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  content String
-  author User? @relation(fields: [authorId], references: [id])
-  authorId Int?
-}
+
