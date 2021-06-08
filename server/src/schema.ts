@@ -40,77 +40,79 @@ const Query = objectType({
         })
       },
     })
-
-    t.nullable.field('postById', {
-      type: 'Tweet',
-      args: {
-        id: intArg(),
-      },
-      resolve: (_parent, args, context: Context) => {
-        return context.prisma.tweet.findUnique({
-          where: { id: args.id || undefined },
-        })
-      },
-    })
-
-    t.nonNull.list.nonNull.field('feed', {
-      type: 'Tweet',
-      args: {
-        searchString: stringArg(),
-        skip: intArg(),
-        take: intArg(),
-        orderBy: arg({
-          type: 'PostOrderByUpdatedAtInput',
-        }),
-      },
-      resolve: (_parent, args, context: Context) => {
-        const or = args.searchString
-          ? {
-            OR: [
-              { title: { contains: args.searchString } },
-              { content: { contains: args.searchString } },
-            ],
-          }
-          : {}
-
-        return context.prisma.tweet.findMany({
-          where: {
-            // published: true,
-            ...or,
-          },
-          take: args.take || undefined,
-          skip: args.skip || undefined,
-          // orderBy: args.orderBy || undefined,
-        })
-      },
-    })
-
-    t.list.field('draftsByUser', {
-      type: 'Tweet',
-      args: {
-        userUniqueInput: nonNull(
-          arg({
-            type: 'UserUniqueInput',
-          }),
-        ),
-      },
-      resolve: (_parent, args, context: Context) => {
-        return context.prisma.user
-          .findUnique({
-            where: {
-              id: args.userUniqueInput.id || undefined,
-              email: args.userUniqueInput.email || undefined,
-            },
-          })
-          .tweets({
-            where: {
-              // published: false,
-            },
-          })
-      },
-    })
-  },
+  }
 })
+
+    // t.nullable.field('postById', {
+    //   type: 'Tweet',
+    //   args: {
+    //     id: intArg(),
+    //   },
+    //   resolve: (_parent, args, context: Context) => {
+    //     return context.prisma.tweet.findUnique({
+    //       where: { id: args.id || undefined },
+    //     })
+    //   },
+    // })
+
+    // t.nonNull.list.nonNull.field('feed', {
+    //   type: 'Tweet',
+    //   args: {
+    //     searchString: stringArg(),
+    //     skip: intArg(),
+    //     take: intArg(),
+    //     orderBy: arg({
+    //       type: 'PostOrderByUpdatedAtInput',
+    //     }),
+    //   },
+    //   resolve: (_parent, args, context: Context) => {
+    //     const or = args.searchString
+    //       ? {
+    //           OR: [
+    //             { title: { contains: args.searchString } },
+    //             { content: { contains: args.searchString } },
+    //           ],
+    //         }
+    //       : {}
+
+    //     return context.prisma.tweet.findMany({
+    //       where: {
+    //         // published: true,
+    //         ...or,
+    //       },
+    //       take: args.take || undefined,
+    //       skip: args.skip || undefined,
+    //       // orderBy: args.orderBy || undefined,
+    //     })
+    //   },
+    // })
+
+//     t.list.field('draftsByUser', {
+//       type: 'Tweet',
+//       args: {
+//         userUniqueInput: nonNull(
+//           arg({
+//             type: 'UserUniqueInput',
+//           }),
+//         ),
+//       },
+//       resolve: (_parent, args, context: Context) => {
+//         return context.prisma.user
+//           .findUnique({
+//             where: {
+//               id: args.userUniqueInput.id || undefined,
+//               email: args.userUniqueInput.email || undefined,
+//             },
+//           })
+//           .tweets({
+//             where: {
+              // published: false,
+//             },
+//           })
+//       },
+//     })
+//   },
+// })
 
 const Mutation = objectType({
   name: 'Mutation',
@@ -164,81 +166,125 @@ const Mutation = objectType({
       },
     })
 
-    t.field('createDraft', {
-      type: 'Tweet',
+    t.field('createProfile', {
+      type: 'Profile',
       args: {
-        data: nonNull(
-          arg({
-            type: 'PostCreateInput',
-          }),
-        ),
+        bio: stringArg(),
+        location: stringArg(),
+        website: stringArg(),
+        avatar: stringArg()
       },
-      resolve: (_, args, context: Context) => {
+      resolve: (_parent, args, context: Context) => {
         const userId = getUserId(context)
-        return context.prisma.tweet.create({
+        if (!userId) throw new Error('Could not authenticate user.')
+        return context.prisma.profile.create({
           data: {
-            title: args.data.title,
-            content: args.data.content,
-            authorId: userId,
-          },
+            ...args,
+            User: {connect: {id: Number(userId)}}
+          }
         })
-      },
+      }
     })
 
-    t.field('togglePublishPost', {
-      type: 'Tweet',
+    t.field('updateProfile', {
+      type: 'Profile',
       args: {
-        id: nonNull(intArg()),
+        id: intArg(),
+        bio: stringArg(),
+        location: stringArg(),
+        website: stringArg(),
+        avatar: stringArg()
       },
-      resolve: async (_, args, context: Context) => {
-        try {
-          const post = await context.prisma.tweet.findUnique({
-            where: { id: args.id || undefined },
-            select: {
-              published: true,
-            },
-          })
-          return context.prisma.tweet.update({
-            where: { id: args.id || undefined },
-            data: { published: !post?.published },
-          })
-        } catch (e) {
-          throw new Error(
-            `Post with ID ${args.id} does not exist in the database.`,
-          )
-        }
-      },
-    })
-
-    t.field('incrementPostViewCount', {
-      type: 'Tweet',
-      args: {
-        id: nonNull(intArg()),
-      },
-      resolve: (_, args, context: Context) => {
-        return context.prisma.tweet.update({
-          where: { id: args.id || undefined },
+      resolve: (_parent, {id, ...args}, context: Context) => {
+        const userId = getUserId(context)
+        if (!userId) throw new Error('Could not authenticate user.')
+        return context.prisma.profile.update({
           data: {
-            viewCount: {
-              increment: 1,
-            },
+            ...args,
           },
+          where: {
+              id: Number(id),
+          }
         })
-      },
+      }
     })
 
-    t.field('deletePost', {
-      type: 'Tweet',
-      args: {
-        id: nonNull(intArg()),
-      },
-      resolve: (_, args, context: Context) => {
-        return context.prisma.tweet.delete({
-          where: { id: args.id },
-        })
-      },
-    })
-  },
+    // t.field('createDraft', {
+    //   type: 'Tweet',
+    //   args: {
+    //     data: nonNull(
+    //       arg({
+    //         type: 'PostCreateInput',
+    //       }),
+    //     ),
+    //   },
+    //   resolve: (_, args, context: Context) => {
+    //     const userId = getUserId(context)
+    //     return context.prisma.tweet.create({
+    //       data: {
+    //         title: args.data.title,
+    //         content: args.data.content,
+    //         authorId: userId,
+    //       },
+    //     })
+    //   },
+    // })
+
+    // t.field('togglePublishPost', {
+    //   type: 'Tweet',
+    //   args: {
+    //     id: nonNull(intArg()),
+    //   },
+    //   resolve: async (_, args, context: Context) => {
+    //     try {
+    //       const post = await context.prisma.tweet.findUnique({
+    //         where: { id: args.id || undefined },
+    //         select: {
+    //           published: true,
+    //         },
+    //       })
+    //       return context.prisma.tweet.update({
+    //         where: { id: args.id || undefined },
+    //         data: { published: !post?.published },
+    //       })
+    //     } catch (e) {
+    //       throw new Error(
+    //         `Post with ID ${args.id} does not exist in the database.`,
+    //       )
+    //     }
+    //   },
+    // })
+
+    // t.field('incrementPostViewCount', {
+    //   type: 'Tweet',
+    //   args: {
+    //     id: nonNull(intArg()),
+    //   },
+    //   resolve: (_, args, context: Context) => {
+    //     return context.prisma.tweet.update({
+    //       where: { id: args.id || undefined },
+    //       data: {
+    //         viewCount: {
+    //           increment: 1,
+    //         },
+    //       },
+    //     })
+    //   },
+    // })
+
+//     t.field('deletePost', {
+//       type: 'Tweet',
+//       args: {
+//         id: nonNull(intArg()),
+//       },
+//       resolve: (_, args, context: Context) => {
+//         return context.prisma.tweet.delete({
+//           where: { id: args.id },
+//         })
+//       },
+//     })
+//   },
+  }
 })
 
 const User = objectType({
@@ -257,7 +303,7 @@ const User = objectType({
           .tweets()
       },
     })
-    t.nonNull.string('Profile')
+    t.string('Profile')
   },
 })
 
@@ -299,7 +345,7 @@ const Tweet = objectType({
           .author()
       },
     })
-  }
+  },
 })
 const Profile = objectType({
   name: 'Profile',
@@ -310,7 +356,7 @@ const Profile = objectType({
     t.string('location')
     t.string('website')
     t.string('avatar')
-  }
+  },
 })
 
 const SortOrder = enumType({
@@ -371,7 +417,7 @@ const schemaWithoutPermissions = makeSchema({
     SortOrder,
     PostOrderByUpdatedAtInput,
     DateTime,
-    Tweet
+    Tweet,
   ],
   outputs: {
     schema: __dirname + '/../schema.graphql',

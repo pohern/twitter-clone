@@ -13,12 +13,10 @@ A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `dat
 scalar DateTime
 
 type Mutation {
-  createDraft(data: PostCreateInput!): Tweet
-  deletePost(id: Int!): Tweet
-  incrementPostViewCount(id: Int!): Tweet
+  createProfile(avatar: String, bio: String, location: String, website: String): Profile
   login(email: String!, password: String!): AuthPayload
   signup(email: String!, name: String, password: String!): AuthPayload
-  togglePublishPost(id: Int!): Tweet
+  updateProfile(avatar: String, bio: String, id: Int, location: String, website: String): Profile
 }
 
 input PostCreateInput {
@@ -40,10 +38,7 @@ type Profile {
 }
 
 type Query {
-  draftsByUser(userUniqueInput: UserUniqueInput!): [Tweet]
-  feed(orderBy: PostOrderByUpdatedAtInput, searchString: String, skip: Int, take: Int): [Tweet!]!
   me: User
-  postById(id: Int): Tweet
   users: [User!]!
 }
 
@@ -60,7 +55,7 @@ type Tweet {
 }
 
 type User {
-  Profile: String!
+  Profile: String
   email: String!
   id: Int!
   name: String
