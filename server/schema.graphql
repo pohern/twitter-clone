@@ -39,7 +39,7 @@ type Profile {
 
 type Query {
   me: User
-  users: [User!]!
+  users: [User]
 }
 
 enum SortOrder {

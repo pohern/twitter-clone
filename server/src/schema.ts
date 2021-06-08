@@ -1,4 +1,4 @@
-import { permissions } from './permissions'
+// import { permissions } from './permissions'
 import { APP_SECRET, getUserId } from './utils'
 import { compare, hash } from 'bcryptjs'
 import { sign } from 'jsonwebtoken'
@@ -19,19 +19,12 @@ import { Context } from './context'
 
 export const DateTime = asNexusMethod(DateTimeResolver, 'date')
 
-const Query = objectType({
+export const Query = objectType({
   name: 'Query',
-  definition(t) {
-    t.nonNull.list.nonNull.field('users', {
+	definition(t) {
+		t.field('me', {
       type: 'User',
-      resolve: (_parent, _args, context: Context) => {
-        return context.prisma.user.findMany()
-      },
-    })
-
-    t.nullable.field('me', {
-      type: 'User',
-      resolve: (parent, args, context: Context) => {
+      resolve: (_parent, args, context: Context) => {
         const userId = getUserId(context)
         return context.prisma.user.findUnique({
           where: {
@@ -40,79 +33,38 @@ const Query = objectType({
         })
       },
     })
+    t.list.field('users', {
+      type: 'User',
+      resolve: (parent, args, context: Context) => {
+        return context.prisma.user.findMany()
+      },
+    })
   }
 })
-
-    // t.nullable.field('postById', {
-    //   type: 'Tweet',
-    //   args: {
-    //     id: intArg(),
-    //   },
-    //   resolve: (_parent, args, context: Context) => {
-    //     return context.prisma.tweet.findUnique({
-    //       where: { id: args.id || undefined },
-    //     })
-    //   },
-    // })
-
-    // t.nonNull.list.nonNull.field('feed', {
-    //   type: 'Tweet',
-    //   args: {
-    //     searchString: stringArg(),
-    //     skip: intArg(),
-    //     take: intArg(),
-    //     orderBy: arg({
-    //       type: 'PostOrderByUpdatedAtInput',
-    //     }),
-    //   },
-    //   resolve: (_parent, args, context: Context) => {
-    //     const or = args.searchString
-    //       ? {
-    //           OR: [
-    //             { title: { contains: args.searchString } },
-    //             { content: { contains: args.searchString } },
-    //           ],
-    //         }
-    //       : {}
-
-    //     return context.prisma.tweet.findMany({
-    //       where: {
-    //         // published: true,
-    //         ...or,
-    //       },
-    //       take: args.take || undefined,
-    //       skip: args.skip || undefined,
-    //       // orderBy: args.orderBy || undefined,
-    //     })
-    //   },
-    // })
-
-//     t.list.field('draftsByUser', {
-//       type: 'Tweet',
-//       args: {
-//         userUniqueInput: nonNull(
-//           arg({
-//             type: 'UserUniqueInput',
-//           }),
-//         ),
-//       },
-//       resolve: (_parent, args, context: Context) => {
-//         return context.prisma.user
-//           .findUnique({
-//             where: {
-//               id: args.userUniqueInput.id || undefined,
-//               email: args.userUniqueInput.email || undefined,
-//             },
-//           })
-//           .tweets({
-//             where: {
-              // published: false,
-//             },
-//           })
+// const Query = objectType({
+//   name: 'Query',
+//   definition(t) {
+//     t.nonNull.list.nonNull.field('users', {
+//       type: 'User',
+//       resolve: (_parent, _args, context: Context) => {
+//         return context.prisma.user.findMany()
 //       },
 //     })
-//   },
+
+//     t.nullable.field('me', {
+//       type: 'User',
+//       resolve: (parent, args, context: Context) => {
+//         const userId = getUserId(context)
+//         return context.prisma.user.findUnique({
+//           where: {
+//             id: Number(userId),
+//           },
+//         })
+//       },
+//     })
+//   }
 // })
+
 
 const Mutation = objectType({
   name: 'Mutation',
@@ -434,7 +386,7 @@ const schemaWithoutPermissions = makeSchema({
         alias: 'prisma',
       },
     ],
-  },
+  },  
 })
 
-export const schema = applyMiddleware(schemaWithoutPermissions, permissions)
+export const schema = applyMiddleware(schemaWithoutPermissions)
