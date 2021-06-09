@@ -17,9 +17,9 @@ export const ME_QUERY = gql`
 `;
 
 function Profile() {
-    const { loading, error, data } = useQuery(ME_QUERY)
-    if (loading) return <p>Loading...</p>
-    if (error) return <p>{error.message}</p>
+  const { loading, error, data } = useQuery(ME_QUERY);
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>{error.message}</p>;
   return (
     <div className='container'>
       <h1>Profile</h1>

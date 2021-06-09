@@ -18,7 +18,6 @@ import Profile from "./pages/Profile";
 const httpLink = new HttpLink({ uri: "http://localhost:4000" });
 const authLink = setContext(async (req, { headers }) => {
   const token = localStorage.getItem("token");
-
   return {
     ...headers,
     headers: {

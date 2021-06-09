@@ -51,17 +51,7 @@ export const Query = objectType({
 //       },
 //     })
 
-//     t.nullable.field('me', {
-//       type: 'User',
-//       resolve: (parent, args, context: Context) => {
-//         const userId = getUserId(context)
-//         return context.prisma.user.findUnique({
-//           where: {
-//             id: Number(userId),
-//           },
-//         })
-//       },
-//     })
+    
 //   }
 // })
 
@@ -160,82 +150,6 @@ const Mutation = objectType({
         })
       }
     })
-
-    // t.field('createDraft', {
-    //   type: 'Tweet',
-    //   args: {
-    //     data: nonNull(
-    //       arg({
-    //         type: 'PostCreateInput',
-    //       }),
-    //     ),
-    //   },
-    //   resolve: (_, args, context: Context) => {
-    //     const userId = getUserId(context)
-    //     return context.prisma.tweet.create({
-    //       data: {
-    //         title: args.data.title,
-    //         content: args.data.content,
-    //         authorId: userId,
-    //       },
-    //     })
-    //   },
-    // })
-
-    // t.field('togglePublishPost', {
-    //   type: 'Tweet',
-    //   args: {
-    //     id: nonNull(intArg()),
-    //   },
-    //   resolve: async (_, args, context: Context) => {
-    //     try {
-    //       const post = await context.prisma.tweet.findUnique({
-    //         where: { id: args.id || undefined },
-    //         select: {
-    //           published: true,
-    //         },
-    //       })
-    //       return context.prisma.tweet.update({
-    //         where: { id: args.id || undefined },
-    //         data: { published: !post?.published },
-    //       })
-    //     } catch (e) {
-    //       throw new Error(
-    //         `Post with ID ${args.id} does not exist in the database.`,
-    //       )
-    //     }
-    //   },
-    // })
-
-    // t.field('incrementPostViewCount', {
-    //   type: 'Tweet',
-    //   args: {
-    //     id: nonNull(intArg()),
-    //   },
-    //   resolve: (_, args, context: Context) => {
-    //     return context.prisma.tweet.update({
-    //       where: { id: args.id || undefined },
-    //       data: {
-    //         viewCount: {
-    //           increment: 1,
-    //         },
-    //       },
-    //     })
-    //   },
-    // })
-
-//     t.field('deletePost', {
-//       type: 'Tweet',
-//       args: {
-//         id: nonNull(intArg()),
-//       },
-//       resolve: (_, args, context: Context) => {
-//         return context.prisma.tweet.delete({
-//           where: { id: args.id },
-//         })
-//       },
-//     })
-//   },
   }
 })
 
