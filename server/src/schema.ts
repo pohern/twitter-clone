@@ -303,7 +303,6 @@ const Profile = objectType({
   name: 'Profile',
   definition(t) {
     t.nonNull.int('id')
-    t.nonNull.field('createdAt', { type: 'DateTime' })
     t.string('bio')
     t.string('location')
     t.string('website')

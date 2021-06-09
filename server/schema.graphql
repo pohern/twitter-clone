@@ -31,7 +31,6 @@ input PostOrderByUpdatedAtInput {
 type Profile {
   avatar: String
   bio: String
-  createdAt: DateTime!
   id: Int!
   location: String
   website: String
